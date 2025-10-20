@@ -1,11 +1,33 @@
 import * as dotenv from "https://deno.land/std@0.203.0/dotenv/mod.ts";
 import { Client } from "https://deno.land/x/mysql@v2.12.1/mod.ts";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+// import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+
+
 import {
 	create,
 	verify,
 	getNumericDate,
 } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
+
+//HACK: BYCRYPT ALTERNATIVE becaue it not working in deno deploy
+// Hash a password using SHA-256
+export async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// Compare a plain password with a stored hash
+export async function comparePassword(
+  plainPassword: string,
+  hashedPassword: string,
+): Promise<boolean> {
+  const hashOfInput = await hashPassword(plainPassword);
+  return hashOfInput === hashedPassword;
+}
 
 // Load environment variables
 const env = await dotenv.load();
@@ -85,7 +107,8 @@ Deno.serve(async (req) => {
 		if (!name || !email || !password)
 			return jsonResponse({ error: "Missing fields" }, 400);
 
-		const hashed = await bcrypt.hash(password);
+		// const hashed = await bcrypt.hash(password);
+		const hashed = await hashPassword(password);
 		try {
 			await client.execute(
 				"INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
@@ -104,7 +127,8 @@ Deno.serve(async (req) => {
 			email,
 		]);
     console.log(user);
-		if (!user || !(await bcrypt.compare(password, user.password))) {
+		// if (!user || !(await bcrypt.compare(password, user.password))) {
+		if (!user || !(await comparePassword(password, user.password))) {
 			return jsonResponse({ error: "Invalid credentials" }, 401);
 		}
     console.log("Generating token");
