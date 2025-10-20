@@ -58,7 +58,9 @@ function jsonResponse(data: unknown, status = 200) {
 		status,
 		headers: {
 			"Content-Type": "application/json",
-			"Access-Control-Allow-Origin": "*",
+      // ✅ CORS headers
+      // "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://andreiucm.github.io",
 			"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 			"Access-Control-Allow-Headers": "Content-Type, Authorization",
 		},
@@ -91,7 +93,8 @@ Deno.serve(async (req) => {
 
   // CORS headers
 	const headers = {
-		"Access-Control-Allow-Origin": "*",
+    // "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": "https://andreiucm.github.io",
 		"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 		"Access-Control-Allow-Headers": "Content-Type, Authorization",
 	};
